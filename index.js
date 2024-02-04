@@ -29,7 +29,7 @@ function run (bundle, cache, opts, filename) {
   const src = bundle.read(filename)
   if (!src) throw new Error('Module not bundle: "' + filename + '"')
 
-  const parent = new URL('file://' + encodeURI(mod.filename))
+  const parent = new URL(mod.filename, 'file://')
   compile(mod, src.toString())
 
   return mod.exports
