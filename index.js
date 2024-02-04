@@ -6,11 +6,11 @@ const compile = require('./compile')
 const builtinModulesSet = new Set(builtinModules)
 const builtinRequire = require
 
-module.exports = function runBundle (buffer, entrypoint = '/index.js') {
-  const bundle = Bundle.from(buffer)
+module.exports = function runBundle (buffer, entrypoint) {
+  const bundle = Bundle.isBundle(buffer) ? buffer : Bundle.from(buffer)
   const opts = { resolutions: bundle.resolutions, extensions: ['.js', '.cjs', '.json', '.mjs'], conditions: ['node'] }
 
-  return run(bundle, Object.create(null), opts, entrypoint)
+  return run(bundle, Object.create(null), opts, entrypoint || bundle.main)
 }
 
 function run (bundle, cache, opts, filename) {
