@@ -51,6 +51,10 @@ function run (bundle, cache, opts, filename) {
   function readPackage (url) {
     const s = bundle.read(url.pathname)
     if (!s) return null
-    return JSON.parse(s.toString())
+    try {
+      return JSON.parse(s.toString())
+    } catch {
+      return null
+    }
   }
 }
