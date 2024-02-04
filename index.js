@@ -56,7 +56,8 @@ function run (bundle, cache, opts, filename) {
     if (!s) return null
     try {
       return JSON.parse(s.toString())
-    } catch {
+    } catch (e) {
+      console.log('nope', e, s, s.toString())
       return null
     }
   }
