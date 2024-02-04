@@ -29,7 +29,8 @@ function run (bundle, cache, opts, filename) {
   const src = bundle.read(filename)
   if (!src) throw new Error('Module not bundle: "' + filename + '"')
 
-  const parent = new URL('file://' + encodeURI(mod.filename))
+  const parent = new URL(mod.filename, 'file://')
+  console.log('parent pkg', parent)
   compile(mod, src.toString())
 
   return mod.exports
@@ -49,6 +50,7 @@ function run (bundle, cache, opts, filename) {
   }
 
   function readPackage (url) {
+    console.log('read pkg', url)
     const s = bundle.read(url.pathname)
     if (!s) return null
     try {
