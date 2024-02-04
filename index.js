@@ -1,4 +1,4 @@
-const Bundle = require('bare-bundle')
+const Bundle = require('./bare-bundle')
 const bareResolve = require('bare-module-resolve')
 const { builtinModules } = require('module')
 const compile = require('./compile')
