@@ -9,8 +9,8 @@ const builtinRequire = require
 module.exports = function runBundle (buffer, entrypoint = '/index.js') {
   const bundle = Bundle.from(buffer)
   const opts = { resolutions: bundle.resolutions, extensions: ['.js', '.cjs', '.json', '.mjs'], conditions: ['node'] }
-console.log('bundle -->')
-console.log(bundle)
+  console.log('bundle -->')
+  console.log(bundle)
   return run(bundle, Object.create(null), opts, entrypoint)
 }
 
