@@ -1,0 +1,31 @@
+{
+  "name": "node-bare-bundle",
+  "version": "0.0.0",
+  "description": "Run a bare bundle in a Node.js environment",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "compile.js"
+  ],
+  "dependencies": {
+    "bare-bundle": "^1.0.0",
+    "bare-module-resolve": "^1.5.0"
+  },
+  "devDependencies": {
+    "brittle": "^3.3.2",
+    "standard": "^17.1.0"
+  },
+  "scripts": {
+    "test": "standard && brittle test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holepunchto/node-bare-bundle.git"
+  },
+  "author": "Holepunch Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/holepunchto/node-bare-bundle/issues"
+  },
+  "homepage": "https://github.com/holepunchto/node-bare-bundle"
+}
