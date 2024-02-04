@@ -31,7 +31,7 @@ function run (bundle, cache, opts, filename) {
   if (!src) throw new Error('Module not bundle: "' + filename + '"')
 
   const parent = new URL(mod.filename, 'file://')
-  console.log('parent pkg', parent)
+  console.log('parent pkg', parent.href)
   compile(mod, src.toString())
 
   return mod.exports
@@ -51,7 +51,7 @@ function run (bundle, cache, opts, filename) {
   }
 
   function readPackage (url) {
-    console.log('read pkg', url)
+    console.log('read pkg', url.href)
     const s = bundle.read(url.pathname)
     if (!s) return null
     try {
