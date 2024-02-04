@@ -27,7 +27,7 @@ function run (bundle, cache, opts, filename) {
   resolve.resolve = resolve
 
   const src = bundle.read(filename)
-  if (!src) throw new Error('Module not bundle: "' + filename + '"')
+  if (!src) throw new Error('Module not in bundle: "' + filename + '"')
 
   const parent = new URL(mod.filename, 'file://')
   compile(mod, src.toString())
