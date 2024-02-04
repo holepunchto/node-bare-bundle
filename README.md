@@ -10,7 +10,8 @@ npm install node-bare-bundle
 
 ``` js
 const runBundle = require('node-bare-bundle')
-const exports = runBundle(bundleAsABuffer, '/the/entrypoint.js')
+// only need to pass mount if using preresolved native modules
+const exports = runBundle(bundleAsABuffer, { mount: './test.bundle' entrypoint: '/the/entrypoint.js' })
 ```
 
 ## License
