@@ -7,7 +7,7 @@ const crypto = require('crypto')
 test.solo('can run bundle', function (t) {
   t.plan(1)
 
-  const bundle = fs.readFileSync(path.join(__dirname, 'streamx.bundle'))
+  const bundle = fs.readFileSync(path.join(__dirname, 'streamx.data'))
   console.log(crypto.createHash('sha256').update(bundle).digest('hex'))
 
   try {
