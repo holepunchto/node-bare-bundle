@@ -1,4 +1,4 @@
-const Bundle = require('./bare-bundle')
+const Bundle = require('bare-bundle')
 const bareResolve = require('bare-module-resolve')
 const { builtinModules } = require('module')
 const compile = require('./compile')
@@ -9,8 +9,7 @@ const builtinRequire = require
 module.exports = function runBundle (buffer, entrypoint = '/index.js') {
   const bundle = Bundle.from(buffer)
   const opts = { resolutions: bundle.resolutions, extensions: ['.js', '.cjs', '.json', '.mjs'], conditions: ['node'] }
-  console.log('bundle -->')
-  console.log(bundle)
+
   return run(bundle, Object.create(null), opts, entrypoint)
 }
 
@@ -31,7 +30,6 @@ function run (bundle, cache, opts, filename) {
   if (!src) throw new Error('Module not bundle: "' + filename + '"')
 
   const parent = new URL(mod.filename, 'file://')
-  console.log('parent pkg', parent.href)
   compile(mod, src.toString())
 
   return mod.exports
@@ -51,13 +49,11 @@ function run (bundle, cache, opts, filename) {
   }
 
   function readPackage (url) {
-    console.log('read pkg', url.href)
     const s = bundle.read(url.pathname)
     if (!s) return null
     try {
       return JSON.parse(s.toString())
-    } catch (e) {
-      console.log('nope', e, s, s.toString())
+    } catch {
       return null
     }
   }

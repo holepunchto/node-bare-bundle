@@ -1,8 +1,5 @@
 const runBundle = require('../')
 const test = require('brittle')
-const fs = require('fs')
-const path = require('path')
-const crypto = require('crypto')
 
 const BUNDLE = require('./fixtures/bundle.js')
 
