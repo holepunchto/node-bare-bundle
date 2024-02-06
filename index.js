@@ -48,7 +48,7 @@ function run (bundle, mount, cache, opts, filename) {
     if (!u.href.endsWith('/')) u.pathname += '/'
     const key = decodeURI(u.pathname)
     const r = opts.resolutions[key] || opts.resolutions[u.href]
-    if (!r || !r['bare:addon']) throw new Error('Only preresolved native addons supported atm')
+    if (!r || !r['bare:addon']) throw new Error('Could not load addon in "' + dirname + '" - only preresolved addons supported')
     const addon = r['bare:addon'].replace(/{host}/, host)
     const f = addon.startsWith('file://') ? new URL(addon) : new URL((addon.startsWith('/') ? '.' : '') + addon, mount)
     return builtinRequire(fileURLToPath(f))
@@ -59,6 +59,7 @@ function run (bundle, mount, cache, opts, filename) {
     for (const u of bareResolve(req, parent, opts, readPackage)) {
       const key = decodeURI(u.pathname)
       if (bundle.exists(key)) return key
+      if (bundle.exists(u.href)) return u.href
     }
     throw new Error('Could not resolve "' + req + '" from "' + mod.dirname + '"')
   }
@@ -70,7 +71,7 @@ function run (bundle, mount, cache, opts, filename) {
   }
 
   function readPackage (url) {
-    const s = bundle.read(decodeURI(url.pathname))
+    const s = bundle.read(decodeURI(url.pathname)) || bundle.read(url.href)
     if (!s) return null
     try {
       return JSON.parse(b4a.toString(s))
