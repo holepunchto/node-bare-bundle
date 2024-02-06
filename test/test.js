@@ -35,7 +35,7 @@ test('can load native addons from bundle', function (t) {
   add('/node_modules/node-gyp-build/package.json')
 
   b.resolutions = {
-    '/node_modules/sodium-native': {
+    '/node_modules/sodium-native/': {
       'bare:addon': '/../../node_modules/sodium-native/prebuilds/{host}/sodium-native.node'
     }
   }

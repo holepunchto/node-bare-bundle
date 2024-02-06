@@ -1,5 +1,6 @@
 const Bundle = require('bare-bundle')
 const bareResolve = require('bare-module-resolve')
+const b4a = require('b4a')
 const { builtinModules } = global.Bare ? { builtinModules: [] } : require('module')
 const { pathToFileURL, fileURLToPath } = require('url-file-url')
 const compile = require('./compile')
@@ -38,14 +39,15 @@ function run (bundle, mount, cache, opts, filename) {
   if (!src) throw new Error('Module not in bundle: "' + filename + '"')
 
   const parent = new URL(mod.filename, 'file://')
-  compile(mod, src.toString())
+  compile(mod, b4a.toString(src))
 
   return mod.exports
 
   function addon (dirname = '.') {
     const u = new URL(dirname, parent)
-    const key = decodeURI(u.pathname.replace(/\/$/, '') || '/')
-    const r = opts.resolutions[key]
+    if (!u.href.endsWith('/')) u.pathname += '/'
+    const key = decodeURI(u.pathname)
+    const r = opts.resolutions[key] || opts.resolutions[u.href]
     if (!r || !r['bare:addon']) throw new Error('Only preresolved native addons supported atm')
     const addon = r['bare:addon'].replace(/{host}/, host)
     const f = addon.startsWith('file://') ? new URL(addon) : new URL((addon.startsWith('/') ? '.' : '') + addon, mount)
@@ -55,7 +57,8 @@ function run (bundle, mount, cache, opts, filename) {
   function resolve (req) {
     if (builtinModulesSet.has(req)) return req
     for (const u of bareResolve(req, parent, opts, readPackage)) {
-      if (bundle.exists(u.pathname)) return u.pathname
+      const key = decodeURI(u.pathname)
+      if (bundle.exists(key)) return key
     }
     throw new Error('Could not resolve "' + req + '" from "' + mod.dirname + '"')
   }
@@ -67,10 +70,10 @@ function run (bundle, mount, cache, opts, filename) {
   }
 
   function readPackage (url) {
-    const s = bundle.read(url.pathname)
+    const s = bundle.read(decodeURI(url.pathname))
     if (!s) return null
     try {
-      return JSON.parse(s.toString())
+      return JSON.parse(b4a.toString(s))
     } catch {
       return null
     }
