@@ -9,6 +9,8 @@ const builtinModulesSet = new Set(builtinModules)
 const builtinRequire = require
 const host = require.addon ? require.addon.host : global.process.platform + '-' + global.process.arch
 
+if (global.process.versions.electron) builtinModulesSet.add('electron')
+
 module.exports = function runBundle (buffer, { mount = './main.bundle', entrypoint } = {}) {
   const bundle = Bundle.isBundle(buffer) ? buffer : Bundle.from(buffer)
   const mountURL = (typeof mount === 'object' || mount.startsWith('file://')) ? new URL(mount) : pathToFileURL(mount)
