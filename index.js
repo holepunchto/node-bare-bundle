@@ -33,6 +33,7 @@ function run (bundle, mount, cache, opts, filename) {
     require
   }
 
+  require.main = builtinRequire.main
   require.cache = cache
   require.resolve = resolve
   require.addon = addon
