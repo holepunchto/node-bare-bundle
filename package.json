@@ -1,6 +1,6 @@
 {
   "name": "node-bare-bundle",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Run a bare bundle in a Node.js environment",
   "main": "index.js",
   "files": [
