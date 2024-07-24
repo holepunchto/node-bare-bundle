@@ -43,7 +43,8 @@ function run (bundle, mount, cache, opts, filename) {
 
   const parent = new URL(mod.filename, 'file://')
 
-  if (filename.endsWith('.json')) {
+  const jsonRegex = /\.json$/i
+  if (jsonRegex.test(filename)) {
     return JSON.parse(b4a.toString(src))
   }
 
