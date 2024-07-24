@@ -42,10 +42,13 @@ function run (bundle, mount, cache, opts, filename) {
   if (!src) throw new Error('Module not in bundle: "' + filename + '"')
 
   const parent = new URL(mod.filename, 'file://')
-  const isJson = isJsonSrc(b4a.toString(src))
-  compile(mod, !isJson ? b4a.toString(src) : 'return ' + b4a.toString(src))
 
-  return mod.exports
+  if (filename.endsWith('.json')) {
+    return JSON.parse(b4a.toString(src))
+  } else {
+    compile(mod, b4a.toString(src))
+    return mod.exports
+  }
 
   function addon (dirname = '.') {
     const u = new URL(dirname, parent)
@@ -83,13 +86,4 @@ function run (bundle, mount, cache, opts, filename) {
       return null
     }
   }
-}
-
-function isJsonSrc (str) {
-  try {
-    JSON.parse(str)
-  } catch {
-    return false
-  }
-  return true
 }

@@ -56,7 +56,7 @@ test('can compile json file', function (t) {
   b.write('/index.js', 'module.exports = require("./package.json")')
   add('/package.json')
   const pkg = runBundle(b.toBuffer(), { mount: path.join(__dirname, 'test.bundle') })
-  t.ok(pkg)
+  t.is(pkg.name, 'node-bare-bundle')
 
   function add (key) {
     b.write(key, fs.readFileSync(path.join(__dirname, '..', key)))
