@@ -45,10 +45,10 @@ function run (bundle, mount, cache, opts, filename) {
 
   if (filename.endsWith('.json')) {
     return JSON.parse(b4a.toString(src))
-  } else {
-    compile(mod, b4a.toString(src))
-    return mod.exports
   }
+
+  compile(mod, b4a.toString(src))
+  return mod.exports
 
   function addon (dirname = '.') {
     const u = new URL(dirname, parent)
