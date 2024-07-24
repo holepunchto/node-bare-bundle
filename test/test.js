@@ -48,3 +48,17 @@ test('can load native addons from bundle', function (t) {
     b.write(key, fs.readFileSync(path.join(__dirname, '..', key)))
   }
 })
+
+test('can compile json file', function (t) {
+  const b = new Bundle()
+  const fs = require('fs')
+
+  b.write('/index.js', 'module.exports = require("./package.json")')
+  add('/package.json')
+  const pkg = runBundle(b.toBuffer(), { mount: path.join(__dirname, 'test.bundle') })
+  t.is(pkg.name, 'node-bare-bundle')
+
+  function add (key) {
+    b.write(key, fs.readFileSync(path.join(__dirname, '..', key)))
+  }
+})

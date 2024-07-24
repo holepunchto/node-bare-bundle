@@ -42,7 +42,10 @@ function run (bundle, mount, cache, opts, filename) {
   if (!src) throw new Error('Module not in bundle: "' + filename + '"')
 
   const parent = new URL(mod.filename, 'file://')
-  compile(mod, b4a.toString(src))
+  const str = b4a.toString(src)
+
+  if (/\.json$/i.test(filename)) mod.exports = JSON.parse(str)
+  else compile(mod, str)
 
   return mod.exports
 
