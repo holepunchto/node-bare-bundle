@@ -42,13 +42,11 @@ function run (bundle, mount, cache, opts, filename) {
   if (!src) throw new Error('Module not in bundle: "' + filename + '"')
 
   const parent = new URL(mod.filename, 'file://')
+  const str = b4a.toString(src)
 
-  const jsonRegex = /\.json$/i
-  if (jsonRegex.test(filename)) {
-    return JSON.parse(b4a.toString(src))
-  }
+  if (/\.json$/i.test(filename)) mod.exports = JSON.parse(str)
+  else compile(mod, str)
 
-  compile(mod, b4a.toString(src))
   return mod.exports
 
   function addon (dirname = '.') {
