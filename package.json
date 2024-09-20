@@ -7,6 +7,10 @@
     "index.js"
   ],
   "imports": {
+    "fs": {
+      "bare": "bare-fs",
+      "default": "fs"
+    },
     "path": {
       "bare": "bare-path",
       "default": "path"
@@ -22,6 +26,7 @@
     "which-runtime": "^1.2.1"
   },
   "devDependencies": {
+    "bare-fs": "^3.0.2",
     "brittle": "^3.3.2",
     "sodium-native": "^4.0.6",
     "standard": "^17.1.0"
