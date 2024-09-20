@@ -54,7 +54,6 @@ function load (bundle, cache, href) {
 
   if (src === null) throw new Error(`Cannot find module '${url.href}'`)
 
-  const parent = new URL(mod.filename, 'file://')
   const str = b4a.toString(src)
 
   if (path.extname(href) === '.json') mod.exports = JSON.parse(str)
@@ -71,16 +70,16 @@ function load (bundle, cache, href) {
   function resolve (req) {
     if (builtinModules.has(req)) return req
 
-    for (const url of resolveModule(req, parent, { resolutions: bundle.resolutions, conditions }, readPackage)) {
-      if (bundle.exists(url.href)) return url.href
+    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions }, readPackage)) {
+      if (bundle.exists(resolved.href)) return resolved.href
     }
 
     throw new Error(`Cannot find module '${req}' imported from '${url.href}'`)
   }
 
   function addon (req = '.') {
-    for (const url of resolveAddon(req, parent, { resolutions: bundle.resolutions, conditions }, readPackage)) {
-      if (url.protocol === 'file:') return builtinRequire(fileURLToPath(url))
+    for (const resolved of resolveAddon(req, url, { resolutions: bundle.resolutions, conditions }, readPackage)) {
+      if (resolved.protocol === 'file:') return builtinRequire(fileURLToPath(resolved))
     }
 
     throw new Error(`Cannot find addon '${req}' imported from '${url.href}'`)
