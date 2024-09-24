@@ -1,34 +1,46 @@
 const Bundle = require('bare-bundle')
-const bareResolve = require('bare-module-resolve')
+const resolveModule = require('bare-module-resolve')
+const resolveAddon = require('bare-addon-resolve')
+const path = require('path')
 const b4a = require('b4a')
-const { builtinModules } = global.Bare ? { builtinModules: [] } : require('module')
+const { isWindows, isBare, isElectron, platform, arch } = require('which-runtime')
 const { pathToFileURL, fileURLToPath } = require('url-file-url')
-const compile = require('./compile')
 
-const builtinModulesSet = new Set(builtinModules)
 const builtinRequire = require
-const host = require.addon ? require.addon.host : global.process.platform + '-' + global.process.arch
+const builtinModules = new Set(isBare ? [] : require('module').builtinModules)
 
-if (global.process.versions.electron) builtinModulesSet.add('electron')
+if (isElectron) builtinModules.add('electron')
 
-module.exports = function runBundle (buffer, { mount = './main.bundle', entrypoint } = {}) {
-  const bundle = Bundle.isBundle(buffer) ? buffer : Bundle.from(buffer)
-  const mountURL = (typeof mount === 'object' || mount.startsWith('file://')) ? new URL(mount) : pathToFileURL(mount)
-  const opts = { resolutions: bundle.resolutions, extensions: ['.js', '.cjs', '.json', '.mjs'], conditions: ['node'] }
+const conditions = ['node', platform, arch]
 
-  return run(bundle, ensureDir(mountURL), Object.create(null), opts, entrypoint || bundle.main || '/index.js')
+if (isBare) conditions.push('bare')
+
+module.exports = function run (buffer, { mount = '.', entrypoint } = {}) {
+  let bundle = Bundle.from(buffer)
+
+  if (entrypoint) bundle.main = entrypoint
+  else if (bundle.main === null) bundle.main = '/index.js'
+
+  bundle = bundle.mount(ensureDir(pathToFileURL(mount)))
+
+  return load(bundle, Object.create(null), bundle.main)
 }
 
 function ensureDir (url) {
   return url.pathname.endsWith('/') ? url : new URL(url.href + '/')
 }
 
-function run (bundle, mount, cache, opts, filename) {
-  if (cache[filename]) return cache[filename].exports
+function load (bundle, cache, href) {
+  if (cache[href]) return cache[href].exports
 
-  const mod = cache[filename] = {
+  const url = new URL(href)
+
+  const filename = urlToPath(url)
+  const dirname = urlToDirname(url)
+
+  const mod = cache[href] = {
     filename,
-    dirname: filename.slice(0, filename.lastIndexOf('/')),
+    dirname,
     exports: {},
     require
   }
@@ -38,51 +50,92 @@ function run (bundle, mount, cache, opts, filename) {
   require.resolve = resolve
   require.addon = addon
 
-  const src = bundle.read(filename)
-  if (!src) throw new Error('Module not in bundle: "' + filename + '"')
+  const src = bundle.read(href)
 
-  const parent = new URL(mod.filename, 'file://')
+  if (src === null) throw new Error(`Cannot find module '${url.href}'`)
+
   const str = b4a.toString(src)
 
-  if (/\.json$/i.test(filename)) mod.exports = JSON.parse(str)
-  else compile(mod, str)
+  if (path.extname(href) === '.json') mod.exports = JSON.parse(str)
+  else evaluate(mod, str)
 
   return mod.exports
 
-  function addon (dirname = '.') {
-    const u = new URL(dirname, parent)
-    if (!u.href.endsWith('/')) u.pathname += '/'
-    const key = decodeURI(u.pathname)
-    const r = opts.resolutions[key] || opts.resolutions[u.href]
-    if (!r || !r['bare:addon']) throw new Error('Could not load addon in "' + dirname + '" - only preresolved addons supported')
-    const addon = r['bare:addon'].replace(/{host}/, host)
-    const f = addon.startsWith('file://') ? new URL(addon) : new URL((addon.startsWith('/') ? '.' : '') + addon, mount)
-    return builtinRequire(fileURLToPath(f))
+  function require (req) {
+    if (builtinModules.has(req)) return builtinRequire(req)
+
+    return load(bundle, cache, resolve(req))
   }
 
   function resolve (req) {
-    if (builtinModulesSet.has(req)) return req
-    for (const u of bareResolve(req, parent, opts, readPackage)) {
-      const key = decodeURI(u.pathname)
-      if (bundle.exists(key)) return key
-      if (bundle.exists(u.href)) return u.href
+    if (builtinModules.has(req)) return req
+
+    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions }, readPackage)) {
+      if (bundle.exists(resolved.href)) return resolved.href
     }
-    throw new Error('Could not resolve "' + req + '" from "' + mod.dirname + '"')
+
+    throw new Error(`Cannot find module '${req}' imported from '${url.href}'`)
   }
 
-  function require (req) {
-    if (builtinModulesSet.has(req)) return builtinRequire(req)
-    const key = resolve(req)
-    return run(bundle, mount, cache, opts, key)
+  function addon (req = '.') {
+    for (const resolved of resolveAddon(req, url, { resolutions: bundle.resolutions, conditions }, readPackage)) {
+      if (resolved.protocol === 'file:') return builtinRequire(fileURLToPath(resolved))
+    }
+
+    throw new Error(`Cannot find addon '${req}' imported from '${url.href}'`)
   }
 
   function readPackage (url) {
-    const s = bundle.read(decodeURI(url.pathname)) || bundle.read(url.href)
-    if (!s) return null
+    const src = bundle.read(url.href)
+
+    if (src === null) return null
+
     try {
-      return JSON.parse(b4a.toString(s))
+      return JSON.parse(b4a.toString(src))
     } catch {
       return null
     }
   }
+}
+
+function evaluate (module, source) {
+  (new Function('__filename', '__dirname', 'module', 'exports', 'require', source))( // eslint-disable-line no-new-func
+    module.filename,
+    module.dirname,
+    module,
+    module.exports,
+    module.require
+  )
+}
+
+function urlToPath (url) {
+  if (url.protocol === 'file:') return fileURLToPath(url)
+
+  if (isWindows) {
+    if (/%2f|%5c/i.test(url.pathname)) {
+      throw new Error('The URL path must not include encoded \\ or / characters')
+    }
+  } else {
+    if (/%2f/i.test(url.pathname)) {
+      throw new Error('The URL path must not include encoded / characters')
+    }
+  }
+
+  return decodeURIComponent(url.pathname)
+}
+
+function urlToDirname (url) {
+  if (url.protocol === 'file:') return path.dirname(fileURLToPath(url))
+
+  if (isWindows) {
+    if (/%2f|%5c/i.test(url.pathname)) {
+      throw new Error('The URL path must not include encoded \\ or / characters')
+    }
+  } else {
+    if (/%2f/i.test(url.pathname)) {
+      throw new Error('The URL path must not include encoded / characters')
+    }
+  }
+
+  return decodeURIComponent((new URL('.', url)).pathname).replace(/\/$/, '')
 }

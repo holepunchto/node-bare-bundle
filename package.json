@@ -1,25 +1,38 @@
 {
   "name": "node-bare-bundle",
   "version": "1.2.5",
-  "description": "Run a bare bundle in a Node.js environment",
+  "description": "Run a Bare bundle in a Node.js environment",
   "main": "index.js",
   "files": [
-    "index.js",
-    "compile.js"
+    "index.js"
   ],
+  "imports": {
+    "fs": {
+      "bare": "bare-fs",
+      "default": "fs"
+    },
+    "path": {
+      "bare": "bare-path",
+      "default": "path"
+    }
+  },
   "dependencies": {
     "b4a": "^1.6.4",
+    "bare-addon-resolve": "^1.4.2",
     "bare-bundle": "^1.0.0",
     "bare-module-resolve": "^1.5.0",
-    "url-file-url": "^1.0.1"
+    "bare-path": "^3.0.0",
+    "url-file-url": "^1.0.1",
+    "which-runtime": "^1.2.1"
   },
   "devDependencies": {
+    "bare-fs": "^3.0.2",
     "brittle": "^3.3.2",
     "sodium-native": "^4.0.6",
     "standard": "^17.1.0"
   },
   "scripts": {
-    "test": "standard && brittle test/*.js"
+    "test": "standard && node test.js"
   },
   "repository": {
     "type": "git",

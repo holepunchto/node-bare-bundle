@@ -1,6 +1,6 @@
 # node-bare-bundle
 
-Run a bare bundle in a Node.js environment
+Run a Bare bundle in a Node.js environment.
 
 ```
 npm install node-bare-bundle
