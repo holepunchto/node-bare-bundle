@@ -1,6 +1,7 @@
 const fs = require('fs')
 const test = require('brittle')
 const Bundle = require('bare-bundle')
+const { pathToFileURL } = require('url-file-url')
 const run = require('.')
 
 const path = require('path')
@@ -30,7 +31,7 @@ test('can load assets', function (t) {
   b.resolutions = {
     '/index.js': {
       './index.js': {
-        asset: 'file:///path/to/asset',
+        asset: pathToFileURL('/path/to/asset').href,
         default: '/index.js'
       }
     }
