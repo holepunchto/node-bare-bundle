@@ -71,7 +71,7 @@ function load (bundle, cache, href) {
   function resolve (req) {
     if (builtinModules.has(req)) return req
 
-    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions }, readPackage)) {
+    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions: ['require', ...conditions] }, readPackage)) {
       if (bundle.exists(resolved.href)) return resolved.href
     }
 
@@ -87,7 +87,7 @@ function load (bundle, cache, href) {
   }
 
   function asset (req) {
-    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions: ['asset'] }, readPackage)) {
+    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions: ['asset', ...conditions] }, readPackage)) {
       if (resolved.protocol === 'file:') return fileURLToPath(resolved)
     }
 
