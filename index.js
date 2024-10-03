@@ -49,6 +49,7 @@ function load (bundle, cache, href) {
   require.cache = cache
   require.resolve = resolve
   require.addon = addon
+  require.asset = asset
 
   const src = bundle.read(href)
 
@@ -83,6 +84,14 @@ function load (bundle, cache, href) {
     }
 
     throw new Error(`Cannot find addon '${req}' imported from '${url.href}'`)
+  }
+
+  function asset (req) {
+    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions: ['asset'] }, readPackage)) {
+      if (resolved.protocol === 'file:') return fileURLToPath(resolved)
+    }
+
+    throw new Error(`Cannot find asset '${req}' imported from '${url.href}'`)
   }
 
   function readPackage (url) {

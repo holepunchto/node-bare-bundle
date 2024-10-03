@@ -24,6 +24,22 @@ test('can run any part of the bundle', function (t) {
   t.ok(streamx.Readable)
 })
 
+test('can load assets', function (t) {
+  const b = new Bundle()
+  b.write('/index.js', 'module.exports = require.asset("./index.js")')
+  b.resolutions = {
+    '/index.js': {
+      './index.js': {
+        asset: 'file:///path/to/asset',
+        default: '/index.js'
+      }
+    }
+  }
+
+  const asset = run(b.toBuffer(), { mount: path.join(__dirname, 'test.bundle') })
+  t.is(asset, path.resolve('/path/to/asset'))
+})
+
 test('can load native addons from bundle', function (t) {
   const b = new Bundle()
 
