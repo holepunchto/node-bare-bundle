@@ -51,6 +51,8 @@ function load (bundle, cache, href) {
   require.addon = addon
   require.asset = asset
 
+  const { resolutions } = bundle
+
   const src = bundle.read(href)
 
   if (src === null) throw new Error(`Cannot find module '${url.href}'`)
@@ -68,30 +70,36 @@ function load (bundle, cache, href) {
     return load(bundle, cache, resolve(req))
   }
 
-  function resolve (req) {
+  function resolve (req, referrer = url) {
     if (builtinModules.has(req)) return req
 
-    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions: ['require', ...conditions] }, readPackage)) {
+    referrer = toURL(referrer, url)
+
+    for (const resolved of resolveModule(req, referrer, { resolutions, conditions: ['require', ...conditions] }, readPackage)) {
       if (bundle.exists(resolved.href)) return resolved.href
     }
 
-    throw new Error(`Cannot find module '${req}' imported from '${url.href}'`)
+    throw new Error(`Cannot find module '${req}' imported from '${referrer.href}'`)
   }
 
-  function addon (req = '.') {
-    for (const resolved of resolveAddon(req, url, { resolutions: bundle.resolutions, conditions }, readPackage)) {
+  function addon (req = '.', referrer = url) {
+    referrer = toURL(referrer, url)
+
+    for (const resolved of resolveAddon(req, referrer, { resolutions, conditions: ['addon', ...conditions] }, readPackage)) {
       if (resolved.protocol === 'file:') return builtinRequire(fileURLToPath(resolved))
     }
 
-    throw new Error(`Cannot find addon '${req}' imported from '${url.href}'`)
+    throw new Error(`Cannot find addon '${req}' imported from '${referrer.href}'`)
   }
 
-  function asset (req) {
-    for (const resolved of resolveModule(req, url, { resolutions: bundle.resolutions, conditions: ['asset', ...conditions] }, readPackage)) {
+  function asset (req, referrer = url) {
+    referrer = toURL(referrer, url)
+
+    for (const resolved of resolveModule(req, referrer, { resolutions, conditions: ['asset', ...conditions] }, readPackage)) {
       if (resolved.protocol === 'file:') return fileURLToPath(resolved)
     }
 
-    throw new Error(`Cannot find asset '${req}' imported from '${url.href}'`)
+    throw new Error(`Cannot find asset '${req}' imported from '${referrer.href}'`)
   }
 
   function readPackage (url) {
@@ -115,6 +123,20 @@ function evaluate (module, source) {
     module.exports,
     module.require
   )
+}
+
+function toURL (value, base) {
+  if (typeof value === 'object' && value !== null) return value
+
+  if (resolveModule.startsWithWindowsDriveLetter(value)) {
+    return pathToFileURL(value)
+  }
+
+  try {
+    return new URL(value, base)
+  } catch {
+    return pathToFileURL(value)
+  }
 }
 
 function urlToPath (url) {
