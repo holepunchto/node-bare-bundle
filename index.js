@@ -1,6 +1,5 @@
 const Bundle = require('bare-bundle')
 const resolveModule = require('bare-module-resolve')
-const { startsWithWindowsDriveLetter } = require('bare-module-resolve')
 const resolveAddon = require('bare-addon-resolve')
 const path = require('path')
 const b4a = require('b4a')
@@ -129,7 +128,7 @@ function evaluate (module, source) {
 function toURL (value, base) {
   if (typeof value === 'object' && value !== null) return value
 
-  if (startsWithWindowsDriveLetter(value)) {
+  if (resolveModule.startsWithWindowsDriveLetter(value)) {
     return pathToFileURL(value)
   }
 
