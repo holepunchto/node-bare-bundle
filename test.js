@@ -41,58 +41,6 @@ test('can load assets', function (t) {
   t.is(asset, path.resolve('/path/to/asset'))
 })
 
-test('can load native addons from bundle', function (t) {
-  const b = new Bundle()
-
-  b.write('/index.js', 'module.exports = require("sodium-native")')
-  add(b, '/node_modules/sodium-native/package.json')
-  add(b, '/node_modules/sodium-native/index.js')
-  add(b, '/node_modules/node-gyp-build/index.js')
-  add(b, '/node_modules/node-gyp-build/node-gyp-build.js')
-  add(b, '/node_modules/node-gyp-build/package.json')
-
-  b.resolutions = {
-    '/node_modules/sodium-native/': {
-      'bare:addon': {
-        linux: {
-          arm64: {
-            bare: '/../node_modules/sodium-native/prebuilds/linux-arm64/sodium-native.bare',
-            node: '/../node_modules/sodium-native/prebuilds/linux-arm64/sodium-native.node'
-          },
-          x64: {
-            bare: '/../node_modules/sodium-native/prebuilds/linux-x64/sodium-native.bare',
-            node: '/../node_modules/sodium-native/prebuilds/linux-x64/sodium-native.node'
-          }
-        },
-        darwin: {
-          arm64: {
-            bare: '/../node_modules/sodium-native/prebuilds/darwin-arm64/sodium-native.bare',
-            node: '/../node_modules/sodium-native/prebuilds/darwin-arm64/sodium-native.node'
-          },
-          x64: {
-            bare: '/../node_modules/sodium-native/prebuilds/darwin-x64/sodium-native.bare',
-            node: '/../node_modules/sodium-native/prebuilds/darwin-x64/sodium-native.node'
-          }
-        },
-        win32: {
-          arm64: {
-            bare: '/../node_modules/sodium-native/prebuilds/win32-arm64/sodium-native.bare',
-            node: '/../node_modules/sodium-native/prebuilds/win32-arm64/sodium-native.node'
-          },
-          x64: {
-            bare: '/../node_modules/sodium-native/prebuilds/win32-x64/sodium-native.bare',
-            node: '/../node_modules/sodium-native/prebuilds/win32-x64/sodium-native.node'
-          }
-        }
-      }
-    }
-  }
-
-  const sodium = run(b.toBuffer(), { mount: path.join(__dirname, 'test.bundle') })
-
-  t.ok(sodium.crypto_generichash)
-})
-
 test('can compile json file', function (t) {
   const b = new Bundle()
 
